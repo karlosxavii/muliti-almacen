@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination, empty_state, tipo_badge %}
+{% block title %}Movimientos · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Movimientos{% endblock %}
+{% block page_subtitle %}Entradas y salidas con trazabilidad completa{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Documento u observación">
+        <select name="tipo">
+            <option value="">Todos los tipos</option>
+            <option value="ENTRADA" {{ 'selected' if tipo == 'ENTRADA' }}>Entradas</option>
+            <option value="SALIDA" {{ 'selected' if tipo == 'SALIDA' }}>Salidas</option>
+        </select>
+        <input type="date" name="desde" value="{{ desde }}">
+        <input type="date" name="hasta" value="{{ hasta }}">
+        <button class="btn btn-secondary" type="submit">Filtrar</button>
+        {% if query or tipo or desde or hasta %}<a class="btn btn-ghost" href="{{ url_for('movimientos.index') }}">Limpiar</a>{% endif %}
+    </form>
+    <a class="btn btn-primary" href="{{ url_for('movimientos.registrar') }}">Registrar movimiento</a>
+</div>
+
+<div class="card">
+    {% if pagination.items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Documento</th>
+                    <th>Usuario</th>
+                    <th>Líneas</th>
+                    <th>Unidades</th>
+                    <th class="right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movimiento in pagination.items %}
+                <tr>
+                    <td>{{ movimiento.id }}</td>
+                    <td>{{ movimiento.fecha_movimiento|fecha_hora }}</td>
+                    <td>{{ tipo_badge(movimiento.tipo) }}</td>
+                    <td>{{ movimiento.documento or "—" }}</td>
+                    <td>{{ movimiento.usuario.nombre_completo if movimiento.usuario else "—" }}</td>
+                    <td>{{ movimiento.detalles|length }}</td>
+                    <td>{{ movimiento.total_unidades|numero }}</td>
+                    <td class="actions">
+                        <a class="link" href="{{ url_for('movimientos.detalle', movimiento_id=movimiento.id) }}">Detalle</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {{ empty_state("No hay movimientos registrados.", url_for('movimientos.registrar'), "Registrar movimiento") }}
+    {% endif %}
+</div>
+
+{{ render_pagination(pagination) }}
+{% endblock %}

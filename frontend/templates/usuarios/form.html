@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if usuario else "Nuevo" }} usuario · {{ APP_NAME }}{% endblock %}
+{% block page_title %}{{ "Editar usuario" if usuario else "Nuevo usuario" }}{% endblock %}
+{% block page_subtitle %}Los permisos se asignan por rol{% endblock %}
+
+{% block content %}
+{% set activo_checked = request.form.get('activo') if request.method == 'POST' else (usuario.activo if usuario else true) %}
+{% set rol_sel = request.form.get('rol') or (usuario.rol.value if usuario else 'BODEGUERO') %}
+<div class="card form-card">
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="field">
+            <span>Usuario</span>
+            <input type="text" name="username" value="{{ request.form.get('username') or (usuario.username if usuario else '') }}" maxlength="50" required>
+        </label>
+        <label class="field">
+            <span>Nombre completo</span>
+            <input type="text" name="nombre_completo" value="{{ request.form.get('nombre_completo') or (usuario.nombre_completo if usuario else '') }}" maxlength="150" required>
+        </label>
+        <label class="field">
+            <span>Rol</span>
+            <select name="rol" required>
+                {% for value, label in roles %}
+                <option value="{{ value }}" {{ 'selected' if rol_sel == value }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="field">
+            <span>{{ "Nueva contraseña" if usuario else "Contraseña" }}</span>
+            <input type="password" name="password" minlength="6" {{ '' if usuario else 'required' }}>
+            {% if usuario %}<small class="muted">Déjala vacía para conservar la actual</small>{% endif %}
+        </label>
+        <label class="field">
+            <span>Estado</span>
+            <span class="checkbox">
+                <input type="checkbox" name="activo" value="1" {{ 'checked' if activo_checked }}>
+                <span>Usuario activo</span>
+            </span>
+        </label>
+        <div class="form-actions full">
+            <a class="btn btn-ghost" href="{{ url_for('usuarios.index') }}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Guardar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

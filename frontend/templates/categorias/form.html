@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if categoria else "Nueva" }} categoría · {{ APP_NAME }}{% endblock %}
+{% block page_title %}{{ "Editar categoría" if categoria else "Nueva categoría" }}{% endblock %}
+{% block page_subtitle %}Agrupa artículos por familia o uso{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="field">
+            <span>Código</span>
+            <input type="text" name="codigo" value="{{ request.form.get('codigo') or (categoria.codigo if categoria else '') }}" maxlength="50" required>
+        </label>
+        <label class="field">
+            <span>Nombre</span>
+            <input type="text" name="nombre" value="{{ request.form.get('nombre') or (categoria.nombre if categoria else '') }}" maxlength="150" required>
+        </label>
+        <label class="field full">
+            <span>Descripción</span>
+            <textarea name="descripcion" rows="3">{{ request.form.get('descripcion') or (categoria.descripcion if categoria else '') }}</textarea>
+        </label>
+        <div class="form-actions full">
+            <a class="btn btn-ghost" href="{{ url_for('categorias.index') }}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Guardar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

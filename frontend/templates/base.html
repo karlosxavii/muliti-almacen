@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+{% set autenticado = current_user.is_authenticated %}
+<div class="app-shell {{ 'app-auth' if autenticado else 'app-public' }}">
+    {% if autenticado %}
+    <aside class="sidebar" id="sidebar">
+        <a class="brand" href="{{ url_for('dashboard.index') }}">
+            <span class="brand-mark">BC</span>
+            <span class="brand-text">
+                <strong>{{ APP_NAME }}</strong>
+                <small>Inventario multialmacén</small>
+            </span>
+        </a>
+
+        <nav class="nav">
+            <a class="nav-link {{ 'active' if request.blueprint == 'dashboard' }}" href="{{ url_for('dashboard.index') }}">Panel</a>
+
+            <span class="nav-title">Catálogo</span>
+            <a class="nav-link {{ 'active' if request.blueprint == 'almacenes' }}" href="{{ url_for('almacenes.index') }}">Almacenes</a>
+            <a class="nav-link {{ 'active' if request.blueprint == 'estantes' }}" href="{{ url_for('estantes.index') }}">Estantes</a>
+            <a class="nav-link {{ 'active' if request.blueprint == 'categorias' }}" href="{{ url_for('categorias.index') }}">Categorías</a>
+            <a class="nav-link {{ 'active' if request.blueprint == 'articulos' }}" href="{{ url_for('articulos.index') }}">Artículos</a>
+            <a class="nav-link {{ 'active' if request.blueprint == 'lotes' }}" href="{{ url_for('lotes.index') }}">Lotes</a>
+
+            <span class="nav-title">Operación</span>
+            <a class="nav-link {{ 'active' if request.blueprint == 'movimientos' }}" href="{{ url_for('movimientos.index') }}">Movimientos</a>
+            <a class="nav-link {{ 'active' if request.endpoint == 'stock.lotes' }}" href="{{ url_for('stock.lotes') }}">Stock por lote</a>
+            <a class="nav-link {{ 'active' if request.endpoint == 'stock.articulos' }}" href="{{ url_for('stock.articulos') }}">Stock por artículo</a>
+            <a class="nav-link {{ 'active' if request.endpoint == 'stock.almacenes' }}" href="{{ url_for('stock.almacenes') }}">Stock por almacén</a>
+
+            {% if current_user.can_manage_users %}
+            <span class="nav-title">Administración</span>
+            <a class="nav-link {{ 'active' if request.blueprint == 'usuarios' }}" href="{{ url_for('usuarios.index') }}">Usuarios</a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-chip">
+                <span class="avatar">{{ current_user.nombre_completo[:1]|upper }}</span>
+                <span>
+                    <strong>{{ current_user.nombre_completo }}</strong>
+                    <small>{{ current_user.rol_label }}</small>
+                </span>
+            </div>
+            <form method="post" action="{{ url_for('auth.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-ghost btn-block" type="submit">Cerrar sesión</button>
+            </form>
+        </div>
+    </aside>
+    {% endif %}
+
+    <main class="{{ 'main' if autenticado else 'public-main' }}">
+        {% if autenticado %}
+        <header class="topbar">
+            <button class="icon-button" type="button" data-sidebar-toggle aria-label="Abrir menú">☰</button>
+            <div>
+                <h1>{% block page_title %}{% endblock %}</h1>
+                <p class="muted">{% block page_subtitle %}{% endblock %}</p>
+            </div>
+        </header>
+        {% endif %}
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="alerts">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" data-alert>
+                    <span>{{ message }}</span>
+                    <button type="button" class="alert-close" data-alert-close aria-label="Cerrar">×</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="content">
+            {% block content %}{% endblock %}
+        </section>
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

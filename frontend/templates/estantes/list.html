@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination, empty_state %}
+{% block title %}Estantes · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Estantes{% endblock %}
+{% block page_subtitle %}Ubicaciones internas de cada almacén{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Buscar estante o almacén">
+        <select name="almacen_id">
+            <option value="">Todos los almacenes</option>
+            {% for almacen in almacenes %}
+            <option value="{{ almacen.id }}" {{ 'selected' if almacen_id == almacen.id }}>{{ almacen.codigo }} · {{ almacen.nombre }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-secondary" type="submit">Filtrar</button>
+        {% if query or almacen_id %}<a class="btn btn-ghost" href="{{ url_for('estantes.index') }}">Limpiar</a>{% endif %}
+    </form>
+    {% if current_user.can_manage_catalogs %}
+    <a class="btn btn-primary" href="{{ url_for('estantes.crear') }}">Nuevo estante</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    {% if pagination.items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Almacén</th>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Stock</th>
+                    <th class="right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for estante in pagination.items %}
+                <tr>
+                    <td>{{ estante.almacen.codigo }} · {{ estante.almacen.nombre }}</td>
+                    <td><strong>{{ estante.codigo }}</strong></td>
+                    <td>{{ estante.nombre or "—" }}</td>
+                    <td><span class="badge badge-muted">{{ estante.stock_disponible|numero }}</span></td>
+                    <td class="actions">
+                        {% if current_user.can_manage_catalogs %}
+                        <a class="link" href="{{ url_for('estantes.editar', estante_id=estante.id) }}">Editar</a>
+                        <form method="post" action="{{ url_for('estantes.eliminar', estante_id=estante.id) }}" data-confirm="¿Eliminar el estante {{ estante.nombre_completo }}?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="link danger" type="submit">Eliminar</button>
+                        </form>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {{ empty_state("No hay estantes registrados.", url_for('estantes.crear') if current_user.can_manage_catalogs else None, "Crear estante") }}
+    {% endif %}
+</div>
+
+{{ render_pagination(pagination) }}
+{% endblock %}

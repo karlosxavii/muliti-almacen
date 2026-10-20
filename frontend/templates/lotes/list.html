@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination, empty_state, stock_badge %}
+{% block title %}Lotes · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Lotes{% endblock %}
+{% block page_subtitle %}Trazabilidad por lote, vencimiento y proveedor{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Buscar lote o artículo">
+        <select name="articulo_id">
+            <option value="">Todos los artículos</option>
+            {% for articulo in articulos %}
+            <option value="{{ articulo.id }}" {{ 'selected' if articulo_id == articulo.id }}>{{ articulo.codigo }} · {{ articulo.nombre }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-secondary" type="submit">Filtrar</button>
+        {% if query or articulo_id %}<a class="btn btn-ghost" href="{{ url_for('lotes.index') }}">Limpiar</a>{% endif %}
+    </form>
+    {% if current_user.can_manage_catalogs %}
+    <a class="btn btn-primary" href="{{ url_for('lotes.crear') }}">Nuevo lote</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    {% if pagination.items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Lote</th>
+                    <th>Artículo</th>
+                    <th>Fabricación</th>
+                    <th>Vencimiento</th>
+                    <th>Proveedor</th>
+                    <th>Stock</th>
+                    <th class="right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lote in pagination.items %}
+                <tr>
+                    <td><strong>{{ lote.numero_lote }}</strong></td>
+                    <td>{{ lote.articulo.codigo }} · {{ lote.articulo.nombre }}</td>
+                    <td>{{ lote.fecha_fabricacion|fecha }}</td>
+                    <td>
+                        {{ lote.fecha_vencimiento|fecha }}
+                        {% if lote.esta_vencido %}
+                        <span class="badge badge-danger">Vencido</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ lote.proveedor or "—" }}</td>
+                    <td>{{ stock_badge(lote.stock_disponible) }}</td>
+                    <td class="actions">
+                        {% if current_user.can_manage_catalogs %}
+                        <a class="link" href="{{ url_for('lotes.editar', lote_id=lote.id) }}">Editar</a>
+                        <form method="post" action="{{ url_for('lotes.eliminar', lote_id=lote.id) }}" data-confirm="¿Eliminar el lote {{ lote.numero_lote }}?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="link danger" type="submit">Eliminar</button>
+                        </form>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {{ empty_state("No hay lotes registrados.", url_for('lotes.crear') if current_user.can_manage_catalogs else None, "Crear lote") }}
+    {% endif %}
+</div>
+
+{{ render_pagination(pagination) }}
+{% endblock %}

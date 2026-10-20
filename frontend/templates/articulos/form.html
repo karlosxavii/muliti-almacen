@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if articulo else "Nuevo" }} artículo · {{ APP_NAME }}{% endblock %}
+{% block page_title %}{{ "Editar artículo" if articulo else "Nuevo artículo" }}{% endblock %}
+{% block page_subtitle %}El stock se calcula automáticamente a partir de los movimientos{% endblock %}
+
+{% block content %}
+{% set activo_checked = request.form.get('activo') if request.method == 'POST' else (articulo.activo if articulo else true) %}
+<div class="card form-card">
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="field">
+            <span>Código</span>
+            <input type="text" name="codigo" value="{{ request.form.get('codigo') or (articulo.codigo if articulo else '') }}" maxlength="100" required>
+        </label>
+        <label class="field">
+            <span>Nombre</span>
+            <input type="text" name="nombre" value="{{ request.form.get('nombre') or (articulo.nombre if articulo else '') }}" maxlength="200" required>
+        </label>
+        <label class="field">
+            <span>Unidad de medida</span>
+            <input type="text" name="unidad_medida" value="{{ request.form.get('unidad_medida') or (articulo.unidad_medida if articulo else 'UNIDAD') }}" maxlength="50" required>
+        </label>
+        <label class="field">
+            <span>Categoría</span>
+            {% set categoria_sel = request.form.get('categoria_id') or (articulo.categoria_id|string if articulo and articulo.categoria_id else '') %}
+            <select name="categoria_id">
+                <option value="">Sin categoría</option>
+                {% for categoria in categorias %}
+                <option value="{{ categoria.id }}" {{ 'selected' if categoria_sel == categoria.id|string }}>{{ categoria.codigo }} · {{ categoria.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="field">
+            <span>Precio unitario</span>
+            <input type="number" step="0.01" min="0" name="precio_unitario" value="{{ request.form.get('precio_unitario') or (articulo.precio_unitario if articulo and articulo.precio_unitario is not none else '') }}">
+        </label>
+        <label class="field">
+            <span>Peso (kg)</span>
+            <input type="number" step="0.001" min="0" name="peso_kg" value="{{ request.form.get('peso_kg') or (articulo.peso_kg if articulo and articulo.peso_kg is not none else '') }}">
+        </label>
+        <label class="field">
+            <span>Stock mínimo</span>
+            <input type="number" min="0" name="stock_minimo" value="{{ request.form.get('stock_minimo') or (articulo.stock_minimo if articulo else 0) }}">
+        </label>
+        <label class="field">
+            <span>Estado</span>
+            <span class="checkbox">
+                <input type="checkbox" name="activo" value="1" {{ 'checked' if activo_checked }}>
+                <span>Artículo activo</span>
+            </span>
+        </label>
+        <label class="field full">
+            <span>Descripción</span>
+            <textarea name="descripcion" rows="3">{{ request.form.get('descripcion') or (articulo.descripcion if articulo else '') }}</textarea>
+        </label>
+        <div class="form-actions full">
+            <a class="btn btn-ghost" href="{{ url_for('articulos.index') }}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Guardar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

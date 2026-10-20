@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination, empty_state %}
+{% block title %}Usuarios · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Usuarios{% endblock %}
+{% block page_subtitle %}Accesos y roles del sistema{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Buscar usuario o nombre">
+        <button class="btn btn-secondary" type="submit">Buscar</button>
+        {% if query %}<a class="btn btn-ghost" href="{{ url_for('usuarios.index') }}">Limpiar</a>{% endif %}
+    </form>
+    <a class="btn btn-primary" href="{{ url_for('usuarios.crear') }}">Nuevo usuario</a>
+</div>
+
+<div class="card">
+    {% if pagination.items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre completo</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Último acceso</th>
+                    <th class="right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in pagination.items %}
+                <tr>
+                    <td><strong>{{ usuario.username }}</strong></td>
+                    <td>{{ usuario.nombre_completo }}</td>
+                    <td>{{ usuario.rol_label }}</td>
+                    <td>
+                        {% if usuario.activo %}
+                        <span class="badge badge-ok">Activo</span>
+                        {% else %}
+                        <span class="badge badge-muted">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ usuario.ultimo_acceso|fecha_hora }}</td>
+                    <td class="actions">
+                        <a class="link" href="{{ url_for('usuarios.editar', usuario_id=usuario.id) }}">Editar</a>
+                        {% if usuario.id != current_user.id %}
+                        <form method="post" action="{{ url_for('usuarios.cambiar_estado', usuario_id=usuario.id) }}" data-confirm="¿Cambiar el estado de {{ usuario.username }}?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="link {{ 'danger' if usuario.activo else '' }}" type="submit">{{ "Desactivar" if usuario.activo else "Activar" }}</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {{ empty_state("No hay usuarios registrados.", url_for('usuarios.crear'), "Crear usuario") }}
+    {% endif %}
+</div>
+
+{{ render_pagination(pagination) }}
+{% endblock %}

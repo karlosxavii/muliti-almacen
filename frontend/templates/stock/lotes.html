@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stock_badge %}
+{% block title %}Stock por lote · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Stock por lote{% endblock %}
+{% block page_subtitle %}Calculado desde todos los movimientos históricos{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Buscar artículo o lote">
+        <label class="checkbox">
+            <input type="checkbox" name="solo" value="1" {{ 'checked' if solo }}>
+            <span>Solo con stock</span>
+        </label>
+        <button class="btn btn-secondary" type="submit">Filtrar</button>
+        {% if query or solo %}<a class="btn btn-ghost" href="{{ url_for('stock.lotes') }}">Limpiar</a>{% endif %}
+    </form>
+</div>
+
+<div class="card">
+    {% if items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Artículo</th>
+                    <th>Lote</th>
+                    <th>Proveedor</th>
+                    <th>Fabricación</th>
+                    <th>Vencimiento</th>
+                    <th class="right">Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.codigo_articulo }}</strong> · {{ item.nombre_articulo }}</td>
+                    <td>{{ item.numero_lote }}</td>
+                    <td>{{ item.proveedor or "—" }}</td>
+                    <td>{{ item.fecha_fabricacion|fecha }}</td>
+                    <td>{{ item.fecha_vencimiento|fecha }}</td>
+                    <td class="right">{{ stock_badge(item.stock) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>No hay lotes que coincidan con el filtro.</p></div>
+    {% endif %}
+</div>
+{% endblock %}

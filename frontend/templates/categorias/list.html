@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination, empty_state %}
+{% block title %}Categorías · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Categorías{% endblock %}
+{% block page_subtitle %}Clasificación de artículos{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Buscar categoría">
+        <button class="btn btn-secondary" type="submit">Buscar</button>
+        {% if query %}<a class="btn btn-ghost" href="{{ url_for('categorias.index') }}">Limpiar</a>{% endif %}
+    </form>
+    {% if current_user.can_manage_catalogs %}
+    <a class="btn btn-primary" href="{{ url_for('categorias.crear') }}">Nueva categoría</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    {% if pagination.items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Artículos</th>
+                    <th class="right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for categoria in pagination.items %}
+                <tr>
+                    <td><strong>{{ categoria.codigo }}</strong></td>
+                    <td>{{ categoria.nombre }}</td>
+                    <td class="muted">{{ categoria.descripcion or "—" }}</td>
+                    <td><span class="badge badge-muted">{{ categoria.articulos|length }}</span></td>
+                    <td class="actions">
+                        {% if current_user.can_manage_catalogs %}
+                        <a class="link" href="{{ url_for('categorias.editar', categoria_id=categoria.id) }}">Editar</a>
+                        <form method="post" action="{{ url_for('categorias.eliminar', categoria_id=categoria.id) }}" data-confirm="¿Eliminar la categoría {{ categoria.nombre }}?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="link danger" type="submit">Eliminar</button>
+                        </form>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {{ empty_state("No hay categorías registradas.", url_for('categorias.crear') if current_user.can_manage_catalogs else None, "Crear categoría") }}
+    {% endif %}
+</div>
+
+{{ render_pagination(pagination) }}
+{% endblock %}

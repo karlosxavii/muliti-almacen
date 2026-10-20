@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Acceso denegado · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Acceso denegado{% endblock %}
+{% block content %}
+<div class="error-page">
+    <span class="error-code">403</span>
+    <h2>{{ mensaje or "No tienes permisos para esta acción" }}</h2>
+    <p class="muted">Si crees que es un error, contacta al administrador del sistema.</p>
+    <a class="btn btn-primary" href="{{ url_for('dashboard.index') if current_user.is_authenticated else url_for('auth.login') }}">Volver</a>
+</div>
+{% endblock %}

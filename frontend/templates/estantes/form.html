@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if estante else "Nuevo" }} estante · {{ APP_NAME }}{% endblock %}
+{% block page_title %}{{ "Editar estante" if estante else "Nuevo estante" }}{% endblock %}
+{% block page_subtitle %}Cada estante pertenece a un almacén{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="field">
+            <span>Almacén</span>
+            <select name="almacen_id" required>
+                <option value="">Selecciona un almacén</option>
+                {% set selected = request.form.get('almacen_id') or (estante.almacen_id|string if estante else '') %}
+                {% for almacen in almacenes %}
+                <option value="{{ almacen.id }}" {{ 'selected' if selected == almacen.id|string }}>{{ almacen.codigo }} · {{ almacen.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="field">
+            <span>Código</span>
+            <input type="text" name="codigo" value="{{ request.form.get('codigo') or (estante.codigo if estante else '') }}" maxlength="50" required>
+        </label>
+        <label class="field">
+            <span>Nombre</span>
+            <input type="text" name="nombre" value="{{ request.form.get('nombre') or (estante.nombre if estante else '') }}" maxlength="100">
+        </label>
+        <label class="field full">
+            <span>Descripción</span>
+            <textarea name="descripcion" rows="3">{{ request.form.get('descripcion') or (estante.descripcion if estante else '') }}</textarea>
+        </label>
+        <div class="form-actions full">
+            <a class="btn btn-ghost" href="{{ url_for('estantes.index') }}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Guardar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

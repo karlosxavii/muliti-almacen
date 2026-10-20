@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tipo_badge %}
+{% block title %}Movimiento #{{ movimiento.id }} · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Movimiento #{{ movimiento.id }}{% endblock %}
+{% block page_subtitle %}{{ movimiento.fecha_movimiento|fecha_hora }}{% endblock %}
+
+{% block content %}
+<div class="card detail-card">
+    <div class="detail-grid">
+        <div>
+            <span class="stat-label">Tipo</span>
+            <p>{{ tipo_badge(movimiento.tipo) }}</p>
+        </div>
+        <div>
+            <span class="stat-label">Documento</span>
+            <p>{{ movimiento.documento or "—" }}</p>
+        </div>
+        <div>
+            <span class="stat-label">Usuario</span>
+            <p>{{ movimiento.usuario.nombre_completo if movimiento.usuario else "—" }}</p>
+        </div>
+        <div>
+            <span class="stat-label">Total</span>
+            <p>{{ movimiento.total_unidades|numero }} unidades</p>
+        </div>
+        <div class="full">
+            <span class="stat-label">Observación</span>
+            <p>{{ movimiento.observacion or "—" }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <header class="card-header">
+        <h2>Detalle</h2>
+        <a class="link" href="{{ url_for('movimientos.index') }}">Volver al listado</a>
+    </header>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Artículo / lote</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th class="right">Cantidad</th>
+                    <th class="right">Precio</th>
+                    <th class="right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detalle in movimiento.detalles %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        <strong>{{ detalle.lote.articulo.codigo }} · {{ detalle.lote.articulo.nombre }}</strong>
+                        <small class="muted">{{ detalle.lote.numero_lote }}</small>
+                    </td>
+                    <td>{{ detalle.estante_origen.nombre_completo if detalle.estante_origen else "—" }}</td>
+                    <td>{{ detalle.estante_destino.nombre_completo if detalle.estante_destino else "—" }}</td>
+                    <td class="right">{{ detalle.cantidad|numero }}</td>
+                    <td class="right">{{ detalle.precio_unitario|money }}</td>
+                    <td class="right">{{ detalle.subtotal|money }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4">Total</th>
+                    <th class="right">{{ movimiento.total_unidades|numero }}</th>
+                    <th></th>
+                    <th class="right">{{ movimiento.total_valor|money }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

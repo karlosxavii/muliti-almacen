@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination, empty_state, stock_badge %}
+{% block title %}Artículos · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Artículos{% endblock %}
+{% block page_subtitle %}Catálogo de productos y su stock calculado{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Buscar código o nombre">
+        <select name="categoria_id">
+            <option value="">Todas las categorías</option>
+            {% for categoria in categorias %}
+            <option value="{{ categoria.id }}" {{ 'selected' if categoria_id == categoria.id }}>{{ categoria.codigo }} · {{ categoria.nombre }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-secondary" type="submit">Filtrar</button>
+        {% if query or categoria_id %}<a class="btn btn-ghost" href="{{ url_for('articulos.index') }}">Limpiar</a>{% endif %}
+    </form>
+    {% if current_user.can_manage_catalogs %}
+    <a class="btn btn-primary" href="{{ url_for('articulos.crear') }}">Nuevo artículo</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    {% if pagination.items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Unidad</th>
+                    <th>Stock</th>
+                    <th>Mínimo</th>
+                    <th>Estado</th>
+                    <th class="right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for articulo in pagination.items %}
+                <tr>
+                    <td><strong>{{ articulo.codigo }}</strong></td>
+                    <td>{{ articulo.nombre }}</td>
+                    <td>{{ articulo.categoria.nombre if articulo.categoria else "—" }}</td>
+                    <td>{{ articulo.unidad_medida }}</td>
+                    <td>{{ stock_badge(articulo.stock_total, articulo.stock_minimo) }}</td>
+                    <td>{{ articulo.stock_minimo|numero }}</td>
+                    <td>
+                        {% if not articulo.activo %}
+                        <span class="badge badge-muted">Inactivo</span>
+                        {% elif articulo.bajo_stock %}
+                        <span class="badge badge-danger">Bajo stock</span>
+                        {% else %}
+                        <span class="badge badge-ok">Activo</span>
+                        {% endif %}
+                    </td>
+                    <td class="actions">
+                        {% if current_user.can_manage_catalogs %}
+                        <a class="link" href="{{ url_for('articulos.editar', articulo_id=articulo.id) }}">Editar</a>
+                        <form method="post" action="{{ url_for('articulos.eliminar', articulo_id=articulo.id) }}" data-confirm="¿Eliminar el artículo {{ articulo.nombre }}?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="link danger" type="submit">Eliminar</button>
+                        </form>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {{ empty_state("No hay artículos registrados.", url_for('articulos.crear') if current_user.can_manage_catalogs else None, "Crear artículo") }}
+    {% endif %}
+</div>
+
+{{ render_pagination(pagination) }}
+{% endblock %}

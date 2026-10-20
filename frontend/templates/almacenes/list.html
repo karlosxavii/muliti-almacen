@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination, empty_state %}
+{% block title %}Almacenes · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Almacenes{% endblock %}
+{% block page_subtitle %}Gestiona las ubicaciones físicas de la empresa{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Buscar código o nombre">
+        <button class="btn btn-secondary" type="submit">Buscar</button>
+        {% if query %}<a class="btn btn-ghost" href="{{ url_for('almacenes.index') }}">Limpiar</a>{% endif %}
+    </form>
+    {% if current_user.can_manage_catalogs %}
+    <a class="btn btn-primary" href="{{ url_for('almacenes.crear') }}">Nuevo almacén</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    {% if pagination.items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Estantes</th>
+                    <th class="right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for almacen in pagination.items %}
+                <tr>
+                    <td><strong>{{ almacen.codigo }}</strong></td>
+                    <td>{{ almacen.nombre }}</td>
+                    <td class="muted">{{ almacen.descripcion or "—" }}</td>
+                    <td><span class="badge badge-muted">{{ almacen.estantes|length }}</span></td>
+                    <td class="actions">
+                        {% if current_user.can_manage_catalogs %}
+                        <a class="link" href="{{ url_for('almacenes.editar', almacen_id=almacen.id) }}">Editar</a>
+                        <form method="post" action="{{ url_for('almacenes.eliminar', almacen_id=almacen.id) }}" data-confirm="¿Eliminar el almacén {{ almacen.nombre }}?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="link danger" type="submit">Eliminar</button>
+                        </form>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    {{ empty_state("No hay almacenes registrados.", url_for('almacenes.crear') if current_user.can_manage_catalogs else None, "Crear almacén") }}
+    {% endif %}
+</div>
+
+{{ render_pagination(pagination) }}
+{% endblock %}

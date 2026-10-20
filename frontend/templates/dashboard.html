@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tipo_badge %}
+{% block title %}Panel · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Panel de control{% endblock %}
+{% block page_subtitle %}Resumen operativo del inventario{% endblock %}
+
+{% block content %}
+<div class="stat-grid">
+    <article class="stat-card">
+        <span class="stat-label">Stock total</span>
+        <strong class="stat-value">{{ resumen.stock|numero }}</strong>
+        <span class="stat-hint">unidades disponibles</span>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Artículos</span>
+        <strong class="stat-value">{{ resumen.articulos }}</strong>
+        <span class="stat-hint">{{ resumen.lotes }} lotes registrados</span>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Almacenes</span>
+        <strong class="stat-value">{{ resumen.almacenes }}</strong>
+        <span class="stat-hint">{{ resumen.estantes }} estantes</span>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Movimientos</span>
+        <strong class="stat-value">{{ resumen.movimientos }}</strong>
+        <span class="stat-hint">{{ resumen.usuarios }} usuarios activos</span>
+    </article>
+</div>
+
+<div class="grid-2">
+    <section class="card">
+        <header class="card-header">
+            <h2>Movimientos recientes</h2>
+            <a class="link" href="{{ url_for('movimientos.index') }}">Ver todos</a>
+        </header>
+        {% if recientes %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Documento</th>
+                        <th>Unidades</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movimiento in recientes %}
+                    <tr>
+                        <td>{{ movimiento.fecha_movimiento|fecha_hora }}</td>
+                        <td>{{ tipo_badge(movimiento.tipo) }}</td>
+                        <td>{{ movimiento.documento or "—" }}</td>
+                        <td>{{ movimiento.total_unidades|numero }}</td>
+                        <td class="actions"><a class="link" href="{{ url_for('movimientos.detalle', movimiento_id=movimiento.id) }}">Detalle</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><p>Aún no hay movimientos registrados.</p></div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <header class="card-header">
+            <h2>Alertas de stock</h2>
+            <a class="link" href="{{ url_for('stock.articulos', bajo=1) }}">Ver reporte</a>
+        </header>
+        {% if bajo_stock %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Artículo</th>
+                        <th>Stock</th>
+                        <th>Mínimo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bajo_stock %}
+                    <tr>
+                        <td>{{ item.codigo }} · {{ item.nombre }}</td>
+                        <td><span class="badge badge-danger">{{ item.stock|numero }}</span></td>
+                        <td>{{ item.stock_minimo|numero }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><p>No hay artículos bajo el stock mínimo.</p></div>
+        {% endif %}
+    </section>
+</div>
+
+<section class="card">
+    <header class="card-header">
+        <h2>Lotes por vencer en 30 días</h2>
+        <a class="link" href="{{ url_for('stock.lotes') }}">Ver stock por lote</a>
+    </header>
+    {% if por_vencer %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Lote</th>
+                    <th>Artículo</th>
+                    <th>Vence</th>
+                    <th>Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in por_vencer %}
+                <tr>
+                    <td>{{ item.numero_lote }}</td>
+                    <td>{{ item.codigo_articulo }} · {{ item.nombre_articulo }}</td>
+                    <td><span class="badge badge-warning">{{ item.fecha_vencimiento|fecha }}</span></td>
+                    <td>{{ item.stock|numero }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>No hay lotes próximos a vencer.</p></div>
+    {% endif %}
+</section>
+{% endblock %}

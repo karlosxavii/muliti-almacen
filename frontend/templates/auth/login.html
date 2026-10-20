@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión · {{ APP_NAME }}{% endblock %}
+{% block content %}
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-brand">
+            <span class="brand-mark">BC</span>
+            <div>
+                <h1>{{ APP_NAME }}</h1>
+                <p>Control de inventario multialmacén</p>
+            </div>
+        </div>
+
+        <form method="post" class="stack">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="field">
+                <span>Usuario</span>
+                <input type="text" name="username" value="{{ username }}" autocomplete="username" required autofocus>
+            </label>
+            <label class="field">
+                <span>Contraseña</span>
+                <input type="password" name="password" autocomplete="current-password" required>
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" name="remember" value="1">
+                <span>Mantener sesión</span>
+            </label>
+            <button class="btn btn-primary btn-block" type="submit">Ingresar</button>
+        </form>
+
+        <p class="login-help">Acceso inicial: <code>admin / admin123</code> (cámbialo en producción)</p>
+    </div>
+</div>
+{% endblock %}

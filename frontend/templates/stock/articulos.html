@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stock_badge %}
+{% block title %}Stock por artículo · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Stock por artículo{% endblock %}
+{% block page_subtitle %}Suma de todos los lotes del artículo{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+    <form class="filters" method="get">
+        <input type="search" name="q" value="{{ query }}" placeholder="Buscar código o nombre">
+        <label class="checkbox">
+            <input type="checkbox" name="bajo" value="1" {{ 'checked' if solo }}>
+            <span>Solo bajo stock</span>
+        </label>
+        <button class="btn btn-secondary" type="submit">Filtrar</button>
+        {% if query or solo %}<a class="btn btn-ghost" href="{{ url_for('stock.articulos') }}">Limpiar</a>{% endif %}
+    </form>
+</div>
+
+<div class="card">
+    {% if items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Artículo</th>
+                    <th>Categoría</th>
+                    <th>Unidad</th>
+                    <th class="right">Stock</th>
+                    <th class="right">Mínimo</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.codigo }}</strong></td>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.categoria or "—" }}</td>
+                    <td>{{ item.unidad_medida }}</td>
+                    <td class="right">{{ stock_badge(item.stock, item.stock_minimo) }}</td>
+                    <td class="right">{{ item.stock_minimo|numero }}</td>
+                    <td>
+                        {% if item.bajo_stock %}
+                        <span class="badge badge-danger">Bajo stock</span>
+                        {% else %}
+                        <span class="badge badge-ok">Normal</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>No hay artículos que coincidan con el filtro.</p></div>
+    {% endif %}
+</div>
+{% endblock %}

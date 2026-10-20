@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if almacen else "Nuevo" }} almacén · {{ APP_NAME }}{% endblock %}
+{% block page_title %}{{ "Editar almacén" if almacen else "Nuevo almacén" }}{% endblock %}
+{% block page_subtitle %}Los almacenes agrupan estantes y ubicaciones{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="field">
+            <span>Código</span>
+            <input type="text" name="codigo" value="{{ request.form.get('codigo') or (almacen.codigo if almacen else '') }}" maxlength="50" required>
+        </label>
+        <label class="field">
+            <span>Nombre</span>
+            <input type="text" name="nombre" value="{{ request.form.get('nombre') or (almacen.nombre if almacen else '') }}" maxlength="150" required>
+        </label>
+        <label class="field full">
+            <span>Descripción</span>
+            <textarea name="descripcion" rows="4">{{ request.form.get('descripcion') or (almacen.descripcion if almacen else '') }}</textarea>
+        </label>
+        <div class="form-actions full">
+            <a class="btn btn-ghost" href="{{ url_for('almacenes.index') }}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Guardar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

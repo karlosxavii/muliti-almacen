@@ -1,0 +1,46 @@
+{% macro render_pagination(pagination) %}
+{% if pagination.pages > 1 %}
+<nav class="pagination" aria-label="Paginación">
+    {% if pagination.has_prev %}
+    <a class="page-link" href="{{ page_url(pagination.prev_num) }}">Anterior</a>
+    {% else %}
+    <span class="page-link disabled">Anterior</span>
+    {% endif %}
+
+    {% for page in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+        {% if page %}
+            {% if page == pagination.page %}
+            <span class="page-link current">{{ page }}</span>
+            {% else %}
+            <a class="page-link" href="{{ page_url(page) }}">{{ page }}</a>
+            {% endif %}
+        {% else %}
+            <span class="page-ellipsis">…</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+    <a class="page-link" href="{{ page_url(pagination.next_num) }}">Siguiente</a>
+    {% else %}
+    <span class="page-link disabled">Siguiente</span>
+    {% endif %}
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro empty_state(mensaje, accion_url=None, accion_texto=None) %}
+<div class="empty-state">
+    <p>{{ mensaje }}</p>
+    {% if accion_url and accion_texto %}
+    <a class="btn btn-primary" href="{{ accion_url }}">{{ accion_texto }}</a>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro tipo_badge(tipo) %}
+<span class="badge badge-{{ 'entrada' if tipo.value == 'ENTRADA' else 'salida' }}">{{ tipo.value }}</span>
+{% endmacro %}
+
+{% macro stock_badge(stock, minimo=0) %}
+<span class="badge {{ 'badge-danger' if minimo and stock <= minimo else ('badge-ok' if stock > 0 else 'badge-muted') }}">{{ stock|numero }}</span>
+{% endmacro %}

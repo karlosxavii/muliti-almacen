@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Registrar movimiento · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Registrar movimiento{% endblock %}
+{% block page_subtitle %}Las salidas validan stock disponible por lote y estante{% endblock %}
+
+{% macro linea(lotes, estantes) %}
+<tr class="linea">
+    <td>
+        <select name="detalle_lote" class="linea-lote">
+            <option value="">Selecciona un lote</option>
+            {% for lote in lotes %}
+            <option value="{{ lote.id }}">{{ lote.articulo.codigo }} · {{ lote.articulo.nombre }} — {{ lote.numero_lote }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td><input type="number" name="detalle_cantidad" class="linea-cantidad" min="1" step="1" placeholder="0"></td>
+    <td>
+        <select name="detalle_origen" class="linea-origen">
+            <option value="">—</option>
+            {% for estante in estantes %}
+            <option value="{{ estante.id }}">{{ estante.nombre_completo }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td>
+        <select name="detalle_destino" class="linea-destino">
+            <option value="">—</option>
+            {% for estante in estantes %}
+            <option value="{{ estante.id }}">{{ estante.nombre_completo }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td><input type="number" name="detalle_precio" class="linea-precio" min="0" step="0.01" placeholder="0.00"></td>
+    <td><button class="icon-button danger" type="button" data-remove-linea aria-label="Quitar línea">×</button></td>
+</tr>
+{% endmacro %}
+
+{% block content %}
+<form method="post" class="movimiento-form" data-movimiento-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="card form-card">
+        <div class="form-grid">
+            <label class="field">
+                <span>Tipo de movimiento</span>
+                <select name="tipo" id="tipo-movimiento" required>
+                    <option value="ENTRADA" {{ 'selected' if (request.form.get('tipo') or 'ENTRADA') == 'ENTRADA' }}>Entrada</option>
+                    <option value="SALIDA" {{ 'selected' if request.form.get('tipo') == 'SALIDA' }}>Salida</option>
+                </select>
+            </label>
+            <label class="field">
+                <span>Documento</span>
+                <input type="text" name="documento" value="{{ request.form.get('documento', '') }}" maxlength="100" placeholder="OC, guía, requisición">
+            </label>
+            <label class="field">
+                <span>Fecha</span>
+                <input type="date" name="fecha_movimiento" value="{{ request.form.get('fecha_movimiento') or hoy }}">
+            </label>
+            <label class="field full">
+                <span>Observación</span>
+                <textarea name="observacion" rows="2">{{ request.form.get('observacion', '') }}</textarea>
+            </label>
+        </div>
+    </div>
+
+    <div class="card">
+        <header class="card-header">
+            <div>
+                <h2>Líneas del movimiento</h2>
+                <p class="muted" id="linea-hint">Entrada: selecciona el estante de destino.</p>
+            </div>
+            <button class="btn btn-secondary" type="button" id="add-linea">Agregar línea</button>
+        </header>
+
+        <div class="table-wrap">
+            <table class="tabla-lineas">
+                <thead>
+                    <tr>
+                        <th>Lote</th>
+                        <th class="col-cantidad">Cantidad</th>
+                        <th class="col-origen">Estante origen</th>
+                        <th class="col-destino">Estante destino</th>
+                        <th class="col-precio">Precio unit.</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="lineas">
+                    {{ linea(lotes, estantes) }}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="form-actions">
+            <span class="muted">Total de unidades: <strong id="total-unidades">0</strong></span>
+            <div class="actions">
+                <a class="btn btn-ghost" href="{{ url_for('movimientos.index') }}">Cancelar</a>
+                <button class="btn btn-primary" type="submit">Registrar movimiento</button>
+            </div>
+        </div>
+    </div>
+
+    <template id="linea-template">
+        {{ linea(lotes, estantes) }}
+    </template>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/movimientos.js') }}"></script>
+{% endblock %}

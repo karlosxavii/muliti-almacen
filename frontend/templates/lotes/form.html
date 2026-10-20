@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if lote else "Nuevo" }} lote · {{ APP_NAME }}{% endblock %}
+{% block page_title %}{{ "Editar lote" if lote else "Nuevo lote" }}{% endblock %}
+{% block page_subtitle %}El lote identifica el origen y vencimiento de un artículo{% endblock %}
+
+{% block content %}
+{% set ubicacion = lote.ubicaciones[0] if lote and lote.ubicaciones else None %}
+<div class="card form-card">
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="field">
+            <span>Artículo</span>
+            {% set articulo_sel = request.form.get('articulo_id') or (lote.articulo_id|string if lote else '') %}
+            <select name="articulo_id" required>
+                <option value="">Selecciona un artículo</option>
+                {% for articulo in articulos %}
+                <option value="{{ articulo.id }}" {{ 'selected' if articulo_sel == articulo.id|string }}>{{ articulo.codigo }} · {{ articulo.nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="field">
+            <span>Número de lote</span>
+            <input type="text" name="numero_lote" value="{{ request.form.get('numero_lote') or (lote.numero_lote if lote else '') }}" maxlength="100" required>
+        </label>
+        <label class="field">
+            <span>Fecha de fabricación</span>
+            <input type="date" name="fecha_fabricacion" value="{{ request.form.get('fecha_fabricacion') or (lote.fecha_fabricacion.isoformat() if lote and lote.fecha_fabricacion else '') }}">
+        </label>
+        <label class="field">
+            <span>Fecha de vencimiento</span>
+            <input type="date" name="fecha_vencimiento" value="{{ request.form.get('fecha_vencimiento') or (lote.fecha_vencimiento.isoformat() if lote and lote.fecha_vencimiento else '') }}">
+        </label>
+        <label class="field">
+            <span>Proveedor</span>
+            <input type="text" name="proveedor" value="{{ request.form.get('proveedor') or (lote.proveedor if lote else '') }}" maxlength="150">
+        </label>
+        <label class="field">
+            <span>Estante de referencia</span>
+            {% set estante_sel = request.form.get('estante_id') or (ubicacion.estante_id|string if ubicacion else '') %}
+            <select name="estante_id">
+                <option value="">Sin ubicación asignada</option>
+                {% for estante in estantes %}
+                <option value="{{ estante.id }}" {{ 'selected' if estante_sel == estante.id|string }}>{{ estante.nombre_completo }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="field">
+            <span>Cantidad inicial de referencia</span>
+            <input type="number" min="0" name="cantidad_inicial" value="{{ request.form.get('cantidad_inicial') or (ubicacion.cantidad_inicial if ubicacion else 0) }}">
+        </label>
+        <div class="form-actions full">
+            <a class="btn btn-ghost" href="{{ url_for('lotes.index') }}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">Guardar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

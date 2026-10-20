@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Error del servidor · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Error del servidor{% endblock %}
+{% block content %}
+<div class="error-page">
+    <span class="error-code">500</span>
+    <h2>Ocurrió un error inesperado</h2>
+    <p class="muted">Intenta nuevamente. Si el problema persiste, revisa los logs del servidor.</p>
+    <a class="btn btn-primary" href="{{ url_for('dashboard.index') if current_user.is_authenticated else url_for('auth.login') }}">Volver</a>
+</div>
+{% endblock %}

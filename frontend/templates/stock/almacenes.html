@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stock_badge %}
+{% block title %}Stock por almacén · {{ APP_NAME }}{% endblock %}
+{% block page_title %}Stock por almacén{% endblock %}
+{% block page_subtitle %}Entradas menos salidas por ubicación{% endblock %}
+
+{% block content %}
+<div class="card">
+    {% if items %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Almacén</th>
+                    <th class="right">Entradas</th>
+                    <th class="right">Salidas</th>
+                    <th class="right">Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.codigo }}</strong></td>
+                    <td>{{ item.nombre }}</td>
+                    <td class="right">{{ item.entradas|numero }}</td>
+                    <td class="right">{{ item.salidas|numero }}</td>
+                    <td class="right">{{ stock_badge(item.stock) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>No hay almacenes registrados.</p></div>
+    {% endif %}
+</div>
+{% endblock %}
